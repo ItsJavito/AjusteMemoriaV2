@@ -337,7 +337,6 @@ void PrimerAjuste(int *indice_arreglotam, int *num_proceso, int arregloPart[], i
         else
         {
             ContadorIntentos++;
-            printf("\nIntentos Realizados: %d", ContadorIntentos);
             if (ContadorIntentos == CantHuecos)
             {
                 printf(ANSI_COLOR_RED "\nEl proceso que desea ingresar no alcanza en la memoria. \n" ANSI_COLOR_RESET);
