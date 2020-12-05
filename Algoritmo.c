@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -17,7 +16,7 @@ void DibujarMemoria(int arreglo[], int tam_part, int CantProcesos, char ID[]);
 int TamMemoria();
 int esPotencia(int numero);
 int TamParticion();
-void PrimerAjuste(int *indice_arreglotam, int num_proceso, int arregloPart[], int CantParticion, int ArregloTamProcesos[] );
+void PrimerAjuste(int *indice_arreglotam, int *num_proceso, int arregloPart[], int CantParticion, int ArregloTamProcesos[]);
 //Estructura de los procesos
 typedef struct 
 {
@@ -66,7 +65,8 @@ int main ()
     
 
     //Vamos a ingresar los procesos iniciales
-
+// NOMBRE,BLOQUE INICIAL,TAMAÑO 
+// 
     while(1)
     {
         printf("\nLa posicion actual del puntero:%d", Pos_actual);
@@ -170,6 +170,8 @@ int main ()
     int num_proceso = Cant_Procesos + 1;
     //Ingresamos los tamaños de los procesos
     int indice_arregloTam = 0;
+    //Indicador si se ha podido ingresar el proceso o no
+
     for (int i = 0; i < Cant_Particion; i++)
     {
         printf("\nIngrese el ID del proceso: ");  while(getchar()!='\n');  ID[num_proceso] = getchar();
@@ -178,13 +180,11 @@ int main ()
 
         float CantPagina = (float) TamMB / Tam_Particion;
         if ((int) CantPagina < CantPagina) CantPagina++;
-        ArregloTamProcesos[i] = CantPagina;
+        ArregloTamProcesos[indice_arregloTam] = CantPagina;
         printf("Las paginas del proceso %c (en mb) son: %d", ID[num_proceso], (int) CantPagina );
 
-        PrimerAjuste( &indice_arregloTam , num_proceso, arregloPart, Cant_Particion, ArregloTamProcesos);
+        PrimerAjuste( &indice_arregloTam , &num_proceso, arregloPart, Cant_Particion, ArregloTamProcesos);
         DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos, ID);
-        
-        num_proceso++;
         printf("%cDesea ingresar otro proceso? (y/n): ", 168); 
         char estado;
         while(getchar()!='\n'); estado = getchar();
@@ -285,16 +285,27 @@ int esPotencia(int numero)
     }
 }
 
-void PrimerAjuste(int *indice_arreglotam, int num_proceso, int arregloPart[], int CantParticion, int ArregloTamProcesos[] )
+void PrimerAjuste(int *indice_arreglotam, int *num_proceso, int arregloPart[], int CantParticion, int ArregloTamProcesos[])
 {
+    //Contamos la cantidad de Huecos en memoria 
+    int MarcoAnterior = 1, CantHuecos = 0;
+    int indicador = 1; //nos dira si se pudo ingresar el proceso o no. 1 para si y 0 para no.  
+    int ContadorIntentos = 0; //Contamos la cantidad de intentos en que se quiere meter el nuevo proceso
+    MarcoAnterior = 1; //Ponemos como 1 otra vez marco anterior
     //Iniciamos el bucle for y lo recorremos por el arreglo de particiones
     for (int i = 0; i < CantParticion; i++)
     {
-        int TAM_Hueco = 0;  //Iniciamos la variable TAM_hueco, para guardar el tamaño del primer hueco que hallamos en memoria
+        if (arregloPart[i] == 0 && MarcoAnterior>0) CantHuecos++;
+        MarcoAnterior = arregloPart[i];
+    }
 
+    MarcoAnterior = 1;
+    for (int i = 0; i < CantParticion; i++)
+    {
+        int TAM_Hueco = 0;  //Iniciamos la variable TAM_hueco, para guardar el tamaño del primer hueco que hallamos en memoria
         //Cada vez que se encuentre 0 en el arreglo 
-        if (arregloPart[i] == 0)
-        {
+        if (arregloPart[i] == 0 && MarcoAnterior>0) //Si hay en la pos actual hay  un 0 en el arreglo
+        {                                           //y la posicion anterior le partenece a un proceso 
             //hacemos un bucle para sumar el tamaño del hueco 
             for (int j = i; j < CantParticion; j++)
             {
@@ -302,9 +313,14 @@ void PrimerAjuste(int *indice_arreglotam, int num_proceso, int arregloPart[], in
                 //si es otro número se rompe
                 else break;
             }
+            MarcoAnterior = arregloPart[i]; 
         }
         //Si no hay 0 pasa a la siguiente iteracion
-        else continue;
+        else 
+        {
+            MarcoAnterior = arregloPart[i]; 
+            continue;
+        }
 
         //Si el tamaño del hueco es mayor o igual al tamaño del proceso entrante se ingresa al bucle
         if (TAM_Hueco >= ArregloTamProcesos[*indice_arreglotam])
@@ -312,11 +328,24 @@ void PrimerAjuste(int *indice_arreglotam, int num_proceso, int arregloPart[], in
             //Agregamos el numero del proceso en el arreglo en las posiciones que corresponde
             for (int j = i;  j<ArregloTamProcesos[*indice_arreglotam]+i; j++)
             {   
-                arregloPart[j] = num_proceso;
+                arregloPart[j] = *num_proceso;
             }
             *indice_arreglotam = *indice_arreglotam + 1; //Seguimos al siguiente proceso
-            i = 0;              //reiniciamos el bucle
-        }   
+            *num_proceso = *num_proceso +1;
+            break;
+        }
+        else
+        {
+            ContadorIntentos++;
+            printf("\nIntentos Realizados: %d", ContadorIntentos);
+            if (ContadorIntentos == CantHuecos)
+            {
+                printf(ANSI_COLOR_RED "\nEl proceso que desea ingresar no alcanza en la memoria. \n" ANSI_COLOR_RESET);
+                arregloPart[*indice_arreglotam] = 0;
+                break;
+            }
+        }
+        
     }
     printf("\n\n"); //Marcamos un espacio
 }

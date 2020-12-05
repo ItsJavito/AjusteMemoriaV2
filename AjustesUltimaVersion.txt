@@ -1,0 +1,6 @@
+****MEJORAS****
+
+Ahora cuando el proceso que se va a ingresar por 
+primer ajuste no entra en la memoria, manda una alerta
+pero aún así se puede ingresar el proceso siguiente. 
+
