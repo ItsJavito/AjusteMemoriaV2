@@ -11,12 +11,14 @@
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
+
 //Inicializamos las funciones del programa 
 void DibujarMemoria(int arreglo[], int tam_part, int CantProcesos, char ID[]);
 int TamMemoria();
 int esPotencia(int numero);
 int TamParticion();
 void PrimerAjuste(int *indice_arreglotam, int *num_proceso, int arregloPart[], int CantParticion, int ArregloTamProcesos[]);
+void BorrarProceso(char IDProceso, int ArregloMemoria[], int CantProcesos, char ID[]);
 //Estructura de los procesos
 typedef struct 
 {
@@ -167,7 +169,7 @@ int main ()
     int ArregloTamProcesos[Cant_Particion];
 
     //creamos el numero de los nuevos procesos
-    int num_proceso = Cant_Procesos + 1;
+    int num_proceso = Cant_Procesos ;
     //Ingresamos los tamaños de los procesos
     int indice_arregloTam = 0;
     //Indicador si se ha podido ingresar el proceso o no
@@ -182,9 +184,22 @@ int main ()
         if ((int) CantPagina < CantPagina) CantPagina++;
         ArregloTamProcesos[indice_arregloTam] = CantPagina;
         printf("Las paginas del proceso %c (en mb) son: %d", ID[num_proceso], (int) CantPagina );
-
+        num_proceso++;
         PrimerAjuste( &indice_arregloTam , &num_proceso, arregloPart, Cant_Particion, ArregloTamProcesos);
         DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos, ID);
+
+        char eliminar;
+        printf("%cDesea eliminar un proceso? (y/n): ", 168);
+        while(getchar()!='\n'); eliminar = getchar();
+        if (eliminar == 'y')
+        {
+            char id;
+            printf("Ingrese el ID del proceso a eliminar: " );
+            while(getchar()!='\n');  id = getchar();
+            BorrarProceso(id , arregloPart , Cant_Particion , ID);
+            DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos, ID);
+        }
+
         printf("%cDesea ingresar otro proceso? (y/n): ", 168); 
         char estado;
         while(getchar()!='\n'); estado = getchar();
@@ -218,22 +233,28 @@ void DibujarMemoria(int arregloMemoria[], int Num_Particiones, int CantProcesos,
         else if(arregloMemoria[i]>CantProcesos)
         {
             int num = arregloMemoria[i]-CantProcesos-1;
+            if (num > 4)
+            {
+                srand(time(NULL));
+                num = rand()%4;
+            }
+            
             switch (num)
             {
             case 0:
-                printf(ANSI_COLOR_BLUE "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, ID[arregloMemoria[i]]);
+                printf(ANSI_COLOR_BLUE "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, ID[arregloMemoria[i]-1]);
                 break;
             case 1:
-                printf(ANSI_COLOR_YELLOW "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, ID[arregloMemoria[i]]);
+                printf(ANSI_COLOR_YELLOW "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, ID[arregloMemoria[i]-1]);
                 break;
             case 2:
-                printf(ANSI_COLOR_CYAN "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, ID[arregloMemoria[i]]);
+                printf(ANSI_COLOR_CYAN "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, ID[arregloMemoria[i]-1]);
                 break;
             case 3:
-                printf(ANSI_COLOR_MAGENTA "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, ID[arregloMemoria[i]]);
+                printf(ANSI_COLOR_MAGENTA "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, ID[arregloMemoria[i]-1]);
                 break;
             default:
-                printf(ANSI_COLOR_GREEN "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, ID[arregloMemoria[i]]);
+                printf(ANSI_COLOR_GREEN "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, ID[arregloMemoria[i]-1]);
                 break;
             }
         }
@@ -348,3 +369,30 @@ void PrimerAjuste(int *indice_arreglotam, int *num_proceso, int arregloPart[], i
     }
     printf("\n\n"); //Marcamos un espacio
 }
+
+void BorrarProceso(char IDProceso, int ArregloMemoria[], int Cant_Particiones, char ID[])
+{
+    //localizamos el numero el numero del proceso en memoria por su ID
+    int numProceso;
+    
+    for (int i = 0; i < Cant_Particiones; i++)
+    {
+        if (ArregloMemoria[i] != 0){
+            if (ID[ArregloMemoria[i]-1] == IDProceso)
+            {
+                numProceso = ArregloMemoria[i];
+                break;
+            }
+        }
+    }
+    //borramos los rastros del proceso.
+    for (int i = 0; i < Cant_Particiones; i++)
+    {
+        if (ArregloMemoria[i] == numProceso)
+        {
+            ArregloMemoria[i] = 0;
+        }
+    }
+    
+}
+
