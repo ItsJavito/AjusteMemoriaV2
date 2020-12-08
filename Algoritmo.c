@@ -54,15 +54,15 @@ int main ()
     int Cant_Particion = Tam_Memoria/Tam_Particion;
     int arregloPart[Cant_Particion];
     Proceso Procesos[Cant_Particion]; //el máximo de procesos es la cantidad de particiones en la memoria. 
-    char ID[Cant_Particion];
     //inicializamos la tabla con 0
+
     for (int i = 0; i < Cant_Particion; i++)
     {
         arregloPart[i] = 0;
     }
     //Mostramos la cantidad de particiones que se han creado a partir de los datos ingresados
     printf("\nLa cantidad de Particiones es: %d\n", Cant_Particion);
-    DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos_Iniciales, ID);
+    DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos_Iniciales, Procesos);
     //Pedimos la cant de procesos
     //Solo me permite ingresar hasta la misma cantidad que particiones 
     Cant_Procesos_Iniciales = 0;
@@ -123,7 +123,7 @@ int main ()
                 Pos_actual -= CantPaginas;
                 continue;
             }
-            printf("Las paginas del proceso %c (en mb) son: %d", ID[Cant_Procesos_Iniciales], (int) CantPaginas );
+            printf("Las paginas del proceso %c (en mb) son: %d", Procesos[Cant_Procesos_Iniciales].ID, (int) CantPaginas );
             Procesos[Cant_Procesos_Iniciales].Marcos =(int)CantPaginas;
             break;
         } while (1);
@@ -206,7 +206,7 @@ int main ()
             char id;
             printf("Ingrese el ID del proceso a eliminar: " );
             while(getchar()!='\n');  id = getchar();
-            BorrarProceso(id , arregloPart , Cant_Particion , ID);
+            BorrarProceso(id , arregloPart , Cant_Particion , Procesos);
             DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos_Iniciales, Procesos);
         }
 
@@ -386,7 +386,7 @@ void BorrarProceso(char IDProceso, int ArregloMemoria[], int Cant_Particiones, P
     for (int i = 0; i < Cant_Particiones; i++)
     {
         if (ArregloMemoria[i] != 0){
-            if (Procesos[ArregloMemoria[i]].ID == IDProceso)
+            if (Procesos[ArregloMemoria[i]-1].ID == IDProceso)
             {
                 numProceso = ArregloMemoria[i];
                 break;
