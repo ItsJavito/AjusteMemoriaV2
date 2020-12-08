@@ -12,19 +12,22 @@
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
 
+typedef struct 
+{
+    char ID;
+    int indice;
+    int Marcos;
+    int sizeMb;
+}Proceso;
+
 //Inicializamos las funciones del programa 
-void DibujarMemoria(int arreglo[], int tam_part, int CantProcesos, char ID[]);
+void DibujarMemoria(int arregloMemoria[], int Num_Particiones, int CantProcesos, Proceso Procesos[]);
 int TamMemoria();
 int esPotencia(int numero);
 int TamParticion();
-void PrimerAjuste(int *indice_arreglotam, int *num_proceso, int arregloPart[], int CantParticion, int ArregloTamProcesos[]);
-void BorrarProceso(char IDProceso, int ArregloMemoria[], int CantProcesos, char ID[]);
+void PrimerAjuste(int *num_proceso, int arregloPart[], int CantParticion, Proceso Procesos[]);
+void BorrarProceso(char IDProceso, int ArregloMemoria[], int Cant_Particiones, Proceso Procesos[]);
 //Estructura de los procesos
-typedef struct 
-{
-    int indice;
-    int tam;
-}Proceso;
 
 int main ()
 {
@@ -44,7 +47,8 @@ int main ()
     ***EN ESTE APARTADO SE INGRESAN LOS DATOS INICIALES DEL PROBLEMA***
     *******************************************************************
     */
-    int Cant_Procesos;
+
+    int Cant_Procesos_Iniciales;
     int Tam_Memoria = TamMemoria(); 
     int Tam_Particion = TamParticion(); 
     int Cant_Particion = Tam_Memoria/Tam_Particion;
@@ -58,10 +62,10 @@ int main ()
     }
     //Mostramos la cantidad de particiones que se han creado a partir de los datos ingresados
     printf("\nLa cantidad de Particiones es: %d\n", Cant_Particion);
-    DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos, ID);
+    DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos_Iniciales, ID);
     //Pedimos la cant de procesos
     //Solo me permite ingresar hasta la misma cantidad que particiones 
-    Cant_Procesos = 0;
+    Cant_Procesos_Iniciales = 0;
 
     int Pos_actual = -1;
     
@@ -73,15 +77,15 @@ int main ()
     {
         printf("\nLa posicion actual del puntero:%d", Pos_actual);
         //bloque inicial del proceso 
-        printf("\nIngrese ID del proceso: "); while(getchar()!='\n');  ID[Cant_Procesos] = getchar();
+        printf("\nIngrese ID del proceso: "); while(getchar()!='\n');  Procesos[Cant_Procesos_Iniciales].ID = getchar();
         do{
-            printf("Ingrese bloque inicial: "); scanf("%d", &Procesos[Cant_Procesos].indice);
-            if (Procesos[Cant_Procesos].indice>= Cant_Particion || Procesos[Cant_Procesos].indice<0)
+            printf("Ingrese bloque inicial: "); scanf("%d", &Procesos[Cant_Procesos_Iniciales].indice);
+            if (Procesos[Cant_Procesos_Iniciales].indice>= Cant_Particion || Procesos[Cant_Procesos_Iniciales].indice<0)
             {
                 printf(ANSI_COLOR_RED "\nEse valor para bloque inicial es invalido." ANSI_COLOR_RESET);
                 continue;
             }
-            if (Procesos[Cant_Procesos].indice < Pos_actual)
+            if (Procesos[Cant_Procesos_Iniciales].indice < Pos_actual)
             {
                 printf(ANSI_COLOR_RED "\nNo se puede ubicar en ese espacio.\n " ANSI_COLOR_RESET);
                 continue;
@@ -89,19 +93,22 @@ int main ()
             break;
         } while(1);
         
-        Pos_actual = Procesos[Cant_Procesos].indice;
+        Pos_actual = Procesos[Cant_Procesos_Iniciales].indice;
         //memoria que ocupa el proceso 
         do
         {
             int Tam_MB = 0;
             //se ingresa el tamaño del proceso en mb
-            printf("Ingrese el tama%co del proceso %c (en mb): ", 164, ID[Cant_Procesos]); scanf("%d", &Tam_MB);
+            printf("Ingrese el tama%co del proceso %c (en mb): ", 164, Procesos[Cant_Procesos_Iniciales].ID); scanf("%d", &Tam_MB);
             //no se puede ingresar un tamaño mayor a la cantidad de memoria
             if (Tam_MB> TamMemoria)
             {
                 printf(ANSI_COLOR_RED "\nTama%co no permitido.\n " ANSI_COLOR_RESET, 164);
                 continue;
             }
+            //Asignamos el valor a la estructura de procesos 
+            Procesos[Cant_Procesos_Iniciales].sizeMb = Tam_MB;
+
             //Calculamos la cantidad de Marcos que ocupa el proceso
             //Utilizamos una variable float por el decimal, si tiene un decimal es porque ocupa un marco más
             float CantPaginas = (float) Tam_MB / Tam_Particion;
@@ -116,15 +123,15 @@ int main ()
                 Pos_actual -= CantPaginas;
                 continue;
             }
-            printf("Las paginas del proceso %c (en mb) son: %d", ID[Cant_Procesos], (int) CantPaginas );
-            Procesos[Cant_Procesos].tam =(int)CantPaginas;
+            printf("Las paginas del proceso %c (en mb) son: %d", ID[Cant_Procesos_Iniciales], (int) CantPaginas );
+            Procesos[Cant_Procesos_Iniciales].Marcos =(int)CantPaginas;
             break;
         } while (1);
 
-        Cant_Procesos++;
+        Cant_Procesos_Iniciales++;
 
         //para cada proceso
-        for (int i = 0; i < Cant_Procesos; i++)
+        for (int i = 0; i < Cant_Procesos_Iniciales; i++)
         {
             //Reocorremos la tabla principal
             for (int j = 0; j < Cant_Particion; j++)
@@ -132,7 +139,7 @@ int main ()
                 if (Procesos[i].indice == j) //Si el indice del proceso coincide con el indice
                 {                           //del arreglo
 
-                    for (int k = j; k < j+ Procesos[i].tam; k++) //Ponemos un numero correspondiente al proceso en las particiones donde  
+                    for (int k = j; k < j+ Procesos[i].Marcos; k++) //Ponemos un numero correspondiente al proceso en las particiones donde  
                     {                                            //las particiones son ocupadas por el proceso
                         arregloPart[k] = i+1;
                     }
@@ -141,7 +148,7 @@ int main ()
         }
 
         printf("\n****************************************\n");
-        DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos, ID);
+        DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos_Iniciales, Procesos);
         printf("\n****************************************\n");
         printf("%cDesea ingresar otro proceso? (y/n): ", 168); 
         char estado;
@@ -153,7 +160,7 @@ int main ()
     printf("********REPRESENTACION MEMORIA********\n");
     printf("**************************************\n\n"ANSI_COLOR_RESET);
     
-    DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos, ID); //dibujamos los espacios de memoria del problema inicial
+    DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos_Iniciales, Procesos); //dibujamos los espacios de memoria del problema inicial
     
     /*
         *******************************************************************
@@ -169,24 +176,27 @@ int main ()
     int ArregloTamProcesos[Cant_Particion];
 
     //creamos el numero de los nuevos procesos
-    int num_proceso = Cant_Procesos ;
+    int num_proceso = Cant_Procesos_Iniciales;
     //Ingresamos los tamaños de los procesos
     int indice_arregloTam = 0;
     //Indicador si se ha podido ingresar el proceso o no
 
     for (int i = 0; i < Cant_Particion; i++)
     {
-        printf("\nIngrese el ID del proceso: ");  while(getchar()!='\n');  ID[num_proceso] = getchar();
+        printf("\nIngrese el ID del proceso: ");  while(getchar()!='\n');  Procesos[num_proceso].ID = getchar();
         int TamMB;
-        printf("\nIngrese el tama%co del nuevo proceso %c (en mb): ",164 ,ID[num_proceso]); scanf("%d", &TamMB);
+        printf("\nIngrese el tama%co del nuevo proceso %c (en mb): ",164 ,Procesos[num_proceso].ID); scanf("%d", &TamMB);
+        //asignamos el tamaño en MB al proceso indicado
+        Procesos[num_proceso].sizeMb = TamMB;
 
         float CantPagina = (float) TamMB / Tam_Particion;
         if ((int) CantPagina < CantPagina) CantPagina++;
-        ArregloTamProcesos[indice_arregloTam] = CantPagina;
-        printf("Las paginas del proceso %c (en mb) son: %d", ID[num_proceso], (int) CantPagina );
-        num_proceso++;
-        PrimerAjuste( &indice_arregloTam , &num_proceso, arregloPart, Cant_Particion, ArregloTamProcesos);
-        DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos, ID);
+        //asignamos el tamaño de marcos del proceso a su estructura
+        Procesos[num_proceso].Marcos = CantPagina;
+
+        printf("Las paginas del proceso %c (en mb) son: %d", Procesos[num_proceso].ID , (int) CantPagina );
+        PrimerAjuste(&num_proceso, arregloPart, Cant_Particion, Procesos);
+        DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos_Iniciales, Procesos);
 
         char eliminar;
         printf("%cDesea eliminar un proceso? (y/n): ", 168);
@@ -197,7 +207,7 @@ int main ()
             printf("Ingrese el ID del proceso a eliminar: " );
             while(getchar()!='\n');  id = getchar();
             BorrarProceso(id , arregloPart , Cant_Particion , ID);
-            DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos, ID);
+            DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos_Iniciales, Procesos);
         }
 
         printf("%cDesea ingresar otro proceso? (y/n): ", 168); 
@@ -218,11 +228,11 @@ int main ()
     printf("***********RESULTADO FINAL**********\n");
     printf("************************************\n\n"ANSI_COLOR_RESET);
     printf("\n\n"); //Marcamos un espacio
-    DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos, ID); //Dibujamos la memoria en la terminal
+    DibujarMemoria(arregloPart, Cant_Particion, Cant_Procesos_Iniciales, Procesos); //Dibujamos la memoria en la terminal
     return 0;
 }
 
-void DibujarMemoria(int arregloMemoria[], int Num_Particiones, int CantProcesos, char ID[])
+void DibujarMemoria(int arregloMemoria[], int Num_Particiones, int CantProcesos, Proceso Procesos[])
 {
     for (int i = 0; i < Num_Particiones; i++)
     {
@@ -242,25 +252,25 @@ void DibujarMemoria(int arregloMemoria[], int Num_Particiones, int CantProcesos,
             switch (num)
             {
             case 0:
-                printf(ANSI_COLOR_BLUE "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, ID[arregloMemoria[i]-1]);
+                printf(ANSI_COLOR_BLUE "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, Procesos[arregloMemoria[i]-1].ID);
                 break;
             case 1:
-                printf(ANSI_COLOR_YELLOW "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, ID[arregloMemoria[i]-1]);
+                printf(ANSI_COLOR_YELLOW "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, Procesos[arregloMemoria[i]-1].ID);
                 break;
             case 2:
-                printf(ANSI_COLOR_CYAN "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, ID[arregloMemoria[i]-1]);
+                printf(ANSI_COLOR_CYAN "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, Procesos[arregloMemoria[i]-1].ID);
                 break;
             case 3:
-                printf(ANSI_COLOR_MAGENTA "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, ID[arregloMemoria[i]-1]);
+                printf(ANSI_COLOR_MAGENTA "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, Procesos[arregloMemoria[i]-1].ID);
                 break;
             default:
-                printf(ANSI_COLOR_GREEN "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, ID[arregloMemoria[i]-1]);
+                printf(ANSI_COLOR_GREEN "\t%d\t%c%c%c  Proceso %c\n" ANSI_COLOR_RESET,i,179,219,179, Procesos[arregloMemoria[i]-1].ID);
                 break;
             }
         }
         else
         {
-            printf("\t%d\t%c%c%c  Proceso %c\n",i ,179,219,179, ID[arregloMemoria[i]-1]);
+            printf("\t%d\t%c%c%c  Proceso %c\n",i ,179,219,179, Procesos[arregloMemoria[i]-1].ID);
         }
     }
 }
@@ -306,7 +316,7 @@ int esPotencia(int numero)
     }
 }
 
-void PrimerAjuste(int *indice_arreglotam, int *num_proceso, int arregloPart[], int CantParticion, int ArregloTamProcesos[])
+void PrimerAjuste(int *num_proceso, int arregloPart[], int CantParticion, Proceso Procesos[])
 {
     //Contamos la cantidad de Huecos en memoria 
     int MarcoAnterior = 1, CantHuecos = 0;
@@ -344,15 +354,14 @@ void PrimerAjuste(int *indice_arreglotam, int *num_proceso, int arregloPart[], i
         }
 
         //Si el tamaño del hueco es mayor o igual al tamaño del proceso entrante se ingresa al bucle
-        if (TAM_Hueco >= ArregloTamProcesos[*indice_arreglotam])
+        if (TAM_Hueco >= Procesos[*num_proceso].Marcos)
         {
+            *num_proceso = *num_proceso + 1;
             //Agregamos el numero del proceso en el arreglo en las posiciones que corresponde
-            for (int j = i;  j<ArregloTamProcesos[*indice_arreglotam]+i; j++)
+            for (int j = i;  j< Procesos[*num_proceso-1].Marcos+i; j++)
             {   
                 arregloPart[j] = *num_proceso;
             }
-            *indice_arreglotam = *indice_arreglotam + 1; //Seguimos al siguiente proceso
-            *num_proceso = *num_proceso +1;
             break;
         }
         else
@@ -361,7 +370,6 @@ void PrimerAjuste(int *indice_arreglotam, int *num_proceso, int arregloPart[], i
             if (ContadorIntentos == CantHuecos)
             {
                 printf(ANSI_COLOR_RED "\nEl proceso que desea ingresar no alcanza en la memoria. \n" ANSI_COLOR_RESET);
-                arregloPart[*indice_arreglotam] = 0;
                 break;
             }
         }
@@ -370,15 +378,15 @@ void PrimerAjuste(int *indice_arreglotam, int *num_proceso, int arregloPart[], i
     printf("\n\n"); //Marcamos un espacio
 }
 
-void BorrarProceso(char IDProceso, int ArregloMemoria[], int Cant_Particiones, char ID[])
+void BorrarProceso(char IDProceso, int ArregloMemoria[], int Cant_Particiones, Proceso Procesos[])
 {
     //localizamos el numero el numero del proceso en memoria por su ID
-    int numProceso;
+    int numProceso = 0;
     
     for (int i = 0; i < Cant_Particiones; i++)
     {
         if (ArregloMemoria[i] != 0){
-            if (ID[ArregloMemoria[i]-1] == IDProceso)
+            if (Procesos[ArregloMemoria[i]].ID == IDProceso)
             {
                 numProceso = ArregloMemoria[i];
                 break;
