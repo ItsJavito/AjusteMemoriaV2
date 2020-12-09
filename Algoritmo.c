@@ -172,14 +172,8 @@ int main ()
    printf("*****ALGORITMO DE PRIMER AJUSTE*****\n");
    printf("************************************\n\n"ANSI_COLOR_RESET);
 
-    //Creamos una tabla de enteros con los tamaños de los procesos en particiones; 
-    int ArregloTamProcesos[Cant_Particion];
-
     //creamos el numero de los nuevos procesos
     int num_proceso = Cant_Procesos_Iniciales;
-    //Ingresamos los tamaños de los procesos
-    int indice_arregloTam = 0;
-    //Indicador si se ha podido ingresar el proceso o no
 
     for (int i = 0; i < Cant_Particion; i++)
     {
