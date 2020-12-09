@@ -1,0 +1,9 @@
+Tam Memoria: $128	8 
+
+Proceso inicial: $A   0   16 
+Proceso inicial: $D   7   32#
+
+Proceso entrante: $&E	14
+Proceso entrante: $&F	40
+Proceso a borrar: $!A
+Proceso entrante: $&G	8#
